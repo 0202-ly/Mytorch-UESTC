@@ -1,5 +1,5 @@
 # 文件： mytorch/dataset.py
-
+import cv2
 import os
 import gzip
 import struct
@@ -7,7 +7,7 @@ import hashlib
 import urllib.request
 from urllib.error import URLError
 import numpy as np
-
+from .tensor import Tensor
 
 class Dataset:
     def __getitem__(self, item):
@@ -158,3 +158,98 @@ class MnistDataset(Dataset):
 
     def __len__(self):
         return self.data.shape[0]
+
+
+class AutoDriveDataset(Dataset):
+    """
+    适配 MyTorch 框架的自动驾驶数据集加载器
+    """
+
+    def __init__(self, mode, transform=None, data_root="./"):
+        """
+        :参数 mode: 'train' 或者 'val'
+        :参数 transform: 图像预处理函数
+        :参数 data_root: 数据集根目录，用于拼接完整路径
+        """
+        self.mode = mode.lower()
+        self.transform = transform
+        self.data_root = data_root
+
+        assert self.mode in {"train", "val"}
+
+        # 读取数据集列表文件信息
+        if self.mode == "train":
+            file_path = os.path.join(data_root, "train.txt")
+        else:
+            file_path = os.path.join(data_root, "val.txt")
+
+        self.file_list = list()
+
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"找不到数据列表文件: {file_path}")
+
+        with open(file_path, "r") as f:
+            files = f.readlines()
+            for file in files:
+                line = file.strip()
+                if not line:
+                    continue
+                # 解析每一行: 图片路径 转向角
+                parts = line.split(" ")
+                img_path = parts[0]
+                steering = float(parts[1])
+
+                # 如果有油门值(throttle)，通常是第三列，可以按需添加
+                # throttle = float(parts[2]) if len(parts) > 2 else 0.0
+
+                self.file_list.append([img_path, steering])
+
+    def __getitem__(self, i):
+        """
+        :参数 i: 图像检索号
+        :返回: (图像Tensor, 标签Tensor)
+        """
+        # 1. 解析路径
+        img_rel_path = self.file_list[i][0]
+        # 拼接完整路径 (train.txt 里是相对路径)
+        full_img_path = os.path.join(self.data_root, img_rel_path)
+
+        # 2. 读取图像
+        img = cv2.imread(full_img_path)
+        if img is None:
+            raise ValueError(f"无法读取图像: {full_img_path}")
+
+        # BGR -> RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # 3. 预处理
+        # 如果传入了外部 transform 函数则使用它，否则使用默认处理
+        if self.transform:
+            img = self.transform(img)
+        else:
+            # --- 关键适配 MyTorch ---
+            # OpenCV 读取的是 (H, W, C)，但在 mytorch.Conv2d 中我们需要 (C, H, W)
+            # 同时也需要将像素值从 0-255 归一化到 0-1
+
+            # Resize (可选，根据模型输入调整，LeNet通常比较小，DonkeyCar常用 (120, 160))
+            # img = cv2.resize(img, (160, 120))
+
+            # HWC -> CHW 并归一化
+            img = img.transpose(2, 0, 1).astype(np.float32) / 255.0
+
+        # 4. 处理标签 (转向值)
+        label_val = self.file_list[i][1]
+
+        # --- 修改 2: 包装为 MyTorch Tensor ---
+        # 图像 Tensor
+        img_tensor = Tensor(img)
+
+        # 标签 Tensor (形状为 (1,) 的向量，方便计算 MSELoss)
+        label_tensor = Tensor(np.array([label_val], dtype=np.float32))
+
+        return img_tensor, label_tensor
+
+    def __len__(self):
+        """返回: 图像总数"""
+        return len(self.file_list)
