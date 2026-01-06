@@ -5,7 +5,7 @@ from .tensor import Tensor
 
 # --- 从 Modules.py 导入 ---
 # 导入 Module 基类和所有模块
-from .modules import Module, Linear, ReLU, Sigmoid, Conv2d, MaxPool,MinPool, AvgPool, Flatten
+from .modules import Module, Linear, ReLU,ELU, Sigmoid, Conv2d, MaxPool,MinPool, AvgPool, Flatten
 
 # --- 从 loss.py 导入 ---
 # 导入 MSELoss
@@ -21,7 +21,7 @@ from .utils import make_dot
 # 这定义了当用户执行 'from mytorch import *' 时，具体会导入哪些名称
 __all__ = [
     'Tensor',
-    'Module', 'Linear', 'ReLU', 'Sigmoid',
+    'Module', 'Linear', 'ReLU', 'Sigmoid','ELU',
     'Conv2d', 'MaxPool', 'MinPool','AvgPool', 'Flatten',
     'MSELoss','CrossEntropyLoss',
     'Optimizer', 'SGD', 'Momentum', 'Adagrad', 'Rmsprop', 'Adam',
