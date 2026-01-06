@@ -1,5 +1,6 @@
 from .function import Sigmoid as Sigmoid_Op
 from .function import ReLU as ReLU_Op
+from .function import ELU as ELU_Op
 from .function import Add, MatMul, Conv2dOp, MaxPoolOp, MinPoolOp, AvgPoolOp, ReshapeOp
 from .tensor import Tensor
 
@@ -10,7 +11,22 @@ class Module:
     """
 
     def __init__(self):
-        pass
+        self.training = True
+
+    def train(self):
+        """切换到训练模式"""
+        self.training = True
+        # 简单实现：将所有子属性也设为训练模式
+        for attr in self.__dict__.values():
+            if isinstance(attr, Module):
+                attr.train()
+
+    def eval(self):
+        """切换到评估/测试模式"""
+        self.training = False
+        for attr in self.__dict__.values():
+            if isinstance(attr, Module):
+                attr.eval()
 
     def __call__(self, *args, **kwargs):
         """
@@ -53,6 +69,18 @@ class ReLU(Module):
         # 激活函数没有可学习参数
         return []
 
+class ELU(Module):
+    def __init__(self, alpha=1.0):
+        super().__init__()
+        self.alpha = alpha
+
+    def forward(self, x: Tensor) -> Tensor:
+        # 每次 forward 创建一个新的 Op 实例，确保计算图状态独立
+        return ELU_Op(self.alpha)(x)
+
+    def parameters(self):
+        # ELU 没有可学习参数 (alpha 通常作为超参数)
+        return []
 
 class Sigmoid(Module):
     def __init__(self):
