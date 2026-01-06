@@ -8,7 +8,8 @@ from mytorch import (
     Flatten, ReLU, CrossEntropyLoss, Adam,
     Dataloader,
     Dataset,
-    MnistDataset
+    MnistDataset,
+    make_dot
 )
 
 
@@ -120,6 +121,21 @@ if __name__ == "__main__":
     loss_fn = CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
     print("模型初始化完成。")
+
+    # ---可视化计算图 ---
+    print("正在生成计算图可视化...")
+    # 取一个 batch 的数据做一次模拟前向传播
+    visualize_x, visualize_y = next(iter(train_loader))
+    # 只需要执行一次 forward 和 loss 计算来构建图
+    v_pred = model.forward(visualize_x)
+    v_loss = loss_fn.forward(v_pred, visualize_y)
+
+    # 调用可视化函数并保存
+    # 注意：确保你已经按照之前的建议将 make_dot 放在了 mytorch/__init__.py 或相关路径
+    dot = make_dot(v_loss)
+    dot.render('lenet_computation_graph', view=True)
+    print("计算图已保存为 lenet_computation_graph.svg")
+
 
     # --- 训练循环 ---
     print(f"开始训练 {EPOCHS} 个周期...")
