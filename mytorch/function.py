@@ -124,6 +124,54 @@ class ReLU(Function):
     def _get_inputs(self):
         return [self.x]
 
+class ELU(Function):
+    def __init__(self,alpha=1.0):
+        super().__init__()
+        self.alpha =alpha
+        self.x = None
+        self.data = None
+        self.grad = None
+
+    def forward(self, x: Tensor):
+        self.x = x
+        self.data = np.where(
+            x.data > 0,
+            x.data,
+            self.alpha*(np.exp(x.data)-1)
+        )
+        output_tensor = Tensor(self.data, requires_grad=x.requires_grad, creator=self)
+        return output_tensor
+
+    def backward(self):
+        # 确保有上游梯度
+        if self.grad is None:
+            return
+
+        if self.x.requires_grad:
+            # 计算局部梯度
+            # x > 0 时，梯度为 1
+            # x <= 0 时，梯度为 alpha * exp(x)
+            # 这里使用了 np.where 来处理逐元素的条件梯度
+
+            # 优化技巧：我们在 forward 中已经计算了小于0的部分是 alpha * (exp(x) - 1)
+            # 其实 grad_neg = output + alpha。但为了清晰，我们这里直接用 x 计算。
+
+            grad_local = np.where(
+                self.x.data > 0,
+                1.0,
+                self.alpha * np.exp(self.x.data)
+            )
+
+            # 链式法则
+            grad_to_pass = self.grad * grad_local
+
+            if self.x.grad is None:
+                self.x.grad = np.zeros_like(self.x.data)
+            self.x.grad += grad_to_pass
+
+    def _get_inputs(self):
+        return [self.x]
+
 class Sigmoid(Function):
     """
     Sigmoid 激活函数 Op
