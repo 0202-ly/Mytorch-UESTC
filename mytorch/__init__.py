@@ -14,10 +14,9 @@ from .loss import MSELoss,CrossEntropyLoss
 # --- 从 optim.py 导入 ---
 # 导入 Optimizer 基类和所有优化器
 from .optim import Optimizer, SGD, Momentum, Adagrad, Rmsprop, Adam
-from .dataset import Dataset
 from .dataloader import Dataloader
-from .dataset import MnistDataset
-
+from .dataset import Dataset,MnistDataset,AutoDriveDataset
+from .utils import make_dot
 # (可选) 定义 __all__
 # 这定义了当用户执行 'from mytorch import *' 时，具体会导入哪些名称
 __all__ = [
@@ -26,5 +25,6 @@ __all__ = [
     'Conv2d', 'MaxPool', 'MinPool','AvgPool', 'Flatten',
     'MSELoss','CrossEntropyLoss',
     'Optimizer', 'SGD', 'Momentum', 'Adagrad', 'Rmsprop', 'Adam',
-    'Dataset','Dataloader','MnistDataset'
+    'Dataset','Dataloader','MnistDataset','AutoDriveDataset',
+    'make_dot'
 ]
