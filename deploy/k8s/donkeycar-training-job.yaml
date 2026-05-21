@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mytorch-donkeycar-train
+  labels:
+    app: mytorch-uestc
+    component: donkeycar-training
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: mytorch-uestc
+        task: donkeycar-train
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: trainer
+          image: mytorch-donkeycar:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYTORCH_HEADLESS
+              value: "1"
+            - name: KMP_DUPLICATE_LIB_OK
+              value: "TRUE"
+            - name: OMP_NUM_THREADS
+              value: "1"
+            - name: MKL_NUM_THREADS
+              value: "1"
+            - name: CUPY_ACCELERATORS
+              value: ""
+          args:
+            - python
+            - train_donkeycar_resnet18_jit_vs_pytorch.py
+            - --backend
+            - mytorch_jit
+            - --cpu
+            - --data-root
+            - /data/donkeycar
+            - --train-list
+            - splits/temporal_block_gap20/train.txt
+            - --val-list
+            - splits/temporal_block_gap20/val.txt
+            - --results-dir
+            - /outputs/donkeycar_resnet18_mytorch
+            - --epochs
+            - "5"
+            - --batch-size
+            - "8"
+            - --mytorch-loader
+            - async
+            - --mytorch-num-workers
+            - "4"
+            - --mytorch-prefetch-factor
+            - "4"
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          volumeMounts:
+            - name: donkeycar-data
+              mountPath: /data/donkeycar
+              readOnly: true
+            - name: donkeycar-results
+              mountPath: /outputs
+      volumes:
+        - name: donkeycar-data
+          persistentVolumeClaim:
+            claimName: donkeycar-data-pvc
+        - name: donkeycar-results
+          persistentVolumeClaim:
+            claimName: donkeycar-results-pvc

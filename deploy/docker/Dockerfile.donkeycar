@@ -1,0 +1,23 @@
+# MyTorch DonkeyCar training image.
+# The image contains framework code only; mount the DonkeyCar dataset at runtime.
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1
+ENV MYTORCH_HEADLESS=1
+ENV KMP_DUPLICATE_LIB_OK=TRUE
+ENV OMP_NUM_THREADS=1
+ENV MKL_NUM_THREADS=1
+ENV CUPY_ACCELERATORS=
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY deploy/docker/requirements-donkeycar.txt /app/requirements-donkeycar.txt
+RUN pip install --no-cache-dir -r /app/requirements-donkeycar.txt
+
+COPY . /app
+
+CMD ["python", "train_donkeycar_resnet18_jit_vs_pytorch.py", "--backend", "mytorch_jit", "--cpu", "--data-root", "/data/donkeycar", "--train-list", "splits/temporal_block_gap20/train.txt", "--val-list", "splits/temporal_block_gap20/val.txt", "--results-dir", "/outputs/donkeycar_resnet18_mytorch", "--epochs", "5", "--batch-size", "8", "--mytorch-loader", "async", "--mytorch-num-workers", "4", "--mytorch-prefetch-factor", "4"]

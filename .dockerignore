@@ -1,0 +1,15 @@
+.git
+.gitignore
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+.pytest_cache
+.cursor
+.cupy_cache
+outputs
+results
+**/*.pptx
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.csv

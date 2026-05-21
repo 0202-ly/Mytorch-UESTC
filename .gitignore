@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.cupy_cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+outputs/
+
+# Generated training outputs are large; keep the final PPTs and key lightweight evidence.
+results/*
+!results/defense_ppt/
+!results/defense_ppt/**
+!results/jit_fusion_ablation_full_bs32/
+!results/jit_fusion_ablation_full_bs32/training_fusion_ablation.csv
+!results/jit_fusion_ablation_full_bs32/training_fusion_ablation.md
+
+# Model/checkpoint artifacts exceed normal GitHub limits or are reproducible outputs.
+*.pt
+*.pth
+*.pkl
+*.onnx
+*.npz
+
+*.log
+*.tmp
+*.bak
+
+.env
+.venv/
+venv/
+env/
+donkey-env/

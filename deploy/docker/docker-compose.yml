@@ -1,0 +1,15 @@
+# 本地一键拉起容器化训练（数据目录挂载到宿主机便于复现）
+services:
+  mnist-train:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    image: mytorch-uestc:latest
+    environment:
+      MYTORCH_HEADLESS: "1"
+    volumes:
+      - mytorch_mnist_data:/data
+    command: ["python", "train_MNIST.py", "--no-viz", "--epochs", "5", "--data-root", "/data"]
+
+volumes:
+  mytorch_mnist_data:

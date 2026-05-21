@@ -1,0 +1,38 @@
+services:
+  donkeycar-train:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.donkeycar
+    image: mytorch-donkeycar:latest
+    environment:
+      MYTORCH_HEADLESS: "1"
+      CUPY_ACCELERATORS: ""
+    volumes:
+      # Mount a directory that contains images plus train/val list files.
+      # Default points at this repo root so splits/temporal_block_gap20 works.
+      - ${DONKEYCAR_DATA_ROOT:-../..}:/data/donkeycar:ro
+      - ${DONKEYCAR_OUTPUT_ROOT:-../../results/docker_donkeycar}:/outputs
+    command:
+      - python
+      - train_donkeycar_resnet18_jit_vs_pytorch.py
+      - --backend
+      - mytorch_jit
+      - --cpu
+      - --data-root
+      - /data/donkeycar
+      - --train-list
+      - ${DONKEYCAR_TRAIN_LIST:-splits/temporal_block_gap20/train.txt}
+      - --val-list
+      - ${DONKEYCAR_VAL_LIST:-splits/temporal_block_gap20/val.txt}
+      - --results-dir
+      - /outputs/donkeycar_resnet18_mytorch
+      - --epochs
+      - ${DONKEYCAR_EPOCHS:-5}
+      - --batch-size
+      - ${DONKEYCAR_BATCH_SIZE:-8}
+      - --mytorch-loader
+      - ${DONKEYCAR_LOADER:-async}
+      - --mytorch-num-workers
+      - ${DONKEYCAR_WORKERS:-4}
+      - --mytorch-prefetch-factor
+      - ${DONKEYCAR_PREFETCH:-4}
