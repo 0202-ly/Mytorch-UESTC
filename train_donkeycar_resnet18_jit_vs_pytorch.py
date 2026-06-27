@@ -963,7 +963,8 @@ def run_mytorch_jit(config: ExperimentConfig, output_dir: str, flops: Dict[str, 
                 "backward_ms": backward_ms,
                 "optimizer_step_ms": step_ms,
                 "total_batch_ms": total_ms,
-                "loss": to_float(loss) if config.loss_log_interval > 0 and batch_idx % config.loss_log_interval == 0 else None,
+                "loss": to_float(
+                    loss) if config.loss_log_interval > 0 and batch_idx % config.loss_log_interval == 0 else None,
             })
 
         if hasattr(train_loader, "_shutdown"):
@@ -991,7 +992,94 @@ def run_mytorch_jit(config: ExperimentConfig, output_dir: str, flops: Dict[str, 
     wall_time_sec = time.perf_counter() - wall_t0
     resources = monitor.stop()
     loader_stats = train_loader.get_stats() if hasattr(train_loader, "get_stats") else None
+    
+    # 原有的 pickle 格式保存（保留兼容）
     save_mytorch_state(model, os.path.join(output_dir, "mytorch_jit_state.pkl"))
+    
+    # ==========================================================
+    # 新增：保存 MyTorch 模型 (JSON+NPZ格式)
+    # ==========================================================
+    print(f"\n[MyTorch JIT] 保存模型 (JSON+NPZ格式)...")
+    
+    # 获取最终验证指标
+    final_val_loss = history[-1]["val"]["mse"] if history else None
+    
+    try:
+        # 使用 model 的 save_state 方法
+        # 注意：这里 model 是原始模型，runner 是 JIT 包装后的模型
+        # 我们需要保存原始模型的参数
+        model_prefix = os.path.join(output_dir, "mytorch_jit_model_final")
+        
+        # 构建元数据
+        metadata = {
+            "backend": "mytorch_jit",
+            "epochs": config.epochs,
+            "batch_size": config.batch_size,
+            "learning_rate": config.lr,
+            "weight_decay": config.weight_decay,
+            "output_dim": config.output_dim,
+            "image_height": config.image_height,
+            "image_width": config.image_width,
+            "device": config.device,
+            "jit_cache_size": len(getattr(runner, "cache", {})),
+            "jit_experimental_conv_bn_fusion": config.jit_experimental_conv_bn_fusion,
+            "final_val_loss": final_val_loss,
+            "wall_time_seconds": wall_time_sec,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # 如果 model 有 save_state 方法（我们刚添加的）
+        if hasattr(model, 'save_state'):
+            model.save_state(model_prefix, metadata=metadata)
+        else:
+            # 如果没有 save_state 方法，手动保存
+            state = {}
+            for name, tensor in model.named_tensors(include_buffers=True):
+                if hasattr(tensor.data, 'get'):
+                    state[name] = tensor.data.get()
+                else:
+                    state[name] = tensor.data.copy()
+            
+            # 保存 NPZ
+            npz_path = f"{model_prefix}.npz"
+            np.savez_compressed(npz_path, **state)
+            
+            # 构建 JSON
+            tensor_info = []
+            for idx, (name, arr) in enumerate(state.items()):
+                key = f"arr_{idx:06d}"
+                tensor_info.append({
+                    "name": name,
+                    "key": key,
+                    "shape": list(arr.shape),
+                    "dtype": str(arr.dtype),
+                    "requires_grad": True,
+                    "device": "cpu"
+                })
+            
+            json_data = {
+                "format": "mytorch_json_npz_state",
+                "version": 1,
+                "npz_file": f"mytorch_jit_model_final.npz",
+                "model_class": model.__class__.__name__,
+                "framework": "mytorch_jit",
+                "created_at": datetime.now().isoformat(),
+                "metadata": metadata,
+                "tensors": tensor_info
+            }
+            
+            json_path = f"{model_prefix}.json"
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(json_data, f, indent=2, ensure_ascii=False)
+            
+            print(f"✅ MyTorch JIT 模型已保存:")
+            print(f"   JSON: {json_path}")
+            print(f"   NPZ:  {npz_path}")
+            print(f"   Tensors: {len(state)}")
+            
+    except Exception as e:
+        print(f"⚠️ MyTorch JIT 模型保存 (JSON+NPZ) 失败: {e}")
+        print("   继续使用 pickle 格式保存...")
 
     return finalize_backend_result(
         backend=backend,
@@ -1016,7 +1104,6 @@ def run_mytorch_jit(config: ExperimentConfig, output_dir: str, flops: Dict[str, 
             ),
         },
     )
-
 
 def validate_mytorch(model, val_loader, criterion, config: ExperimentConfig) -> Dict[str, Any]:
     model.eval()
@@ -1209,6 +1296,92 @@ def run_pytorch(config: ExperimentConfig, output_dir: str, flops: Dict[str, floa
         resources["torch_peak_allocated_mb"] = torch.cuda.max_memory_allocated() / (1024 ** 2)
         resources["torch_peak_reserved_mb"] = torch.cuda.max_memory_reserved() / (1024 ** 2)
 
+    # ==========================================================
+    # 新增：保存 PyTorch 模型 (JSON+NPZ格式)
+    # ==========================================================
+    print(f"\n[PyTorch] 保存模型 (JSON+NPZ格式)...")
+    
+    # 获取最终验证指标
+    final_val_loss = history[-1]["val"]["mse"] if history else None
+    
+    try:
+        # 将 PyTorch 模型转为 CPU 并提取 state_dict
+        model_cpu = model.cpu()
+        state_dict = model_cpu.state_dict()
+        
+        # 转换为 NumPy 数组字典
+        numpy_state = {}
+        for name, param in state_dict.items():
+            numpy_state[name] = param.numpy()
+        
+        # 获取模型参数数量
+        total_params = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        
+        # 构建 JSON 元数据
+        tensor_info = []
+        arr_keys = []
+        
+        for idx, (name, arr) in enumerate(numpy_state.items()):
+            key = f"arr_{idx:06d}"
+            arr_keys.append(key)
+            tensor_info.append({
+                "name": name,
+                "key": key,
+                "shape": list(arr.shape),
+                "dtype": str(arr.dtype),
+                "requires_grad": True,
+                "device": "cpu"
+            })
+        
+        # 保存 NPZ
+        npz_path = os.path.join(output_dir, "pytorch_model_final.npz")
+        npz_data = {}
+        for (name, arr), key in zip(numpy_state.items(), arr_keys):
+            npz_data[key] = arr
+        np.savez_compressed(npz_path, **npz_data)
+        
+        # 保存 JSON
+        json_path = os.path.join(output_dir, "pytorch_model_final.json")
+        json_data = {
+            "format": "mytorch_json_npz_state",
+            "version": 1,
+            "npz_file": "pytorch_model_final.npz",
+            "model_class": "ResNet18_PyTorch",
+            "framework": "pytorch",
+            "created_at": datetime.now().isoformat(),
+            "metadata": {
+                "backend": "pytorch",
+                "epochs": config.epochs,
+                "batch_size": config.batch_size,
+                "learning_rate": config.lr,
+                "weight_decay": config.weight_decay,
+                "output_dim": config.output_dim,
+                "image_height": config.image_height,
+                "image_width": config.image_width,
+                "device": str(device),
+                "total_params": total_params,
+                "trainable_params": trainable_params,
+                "final_val_loss": final_val_loss,
+                "wall_time_seconds": wall_time_sec,
+                "timestamp": datetime.now().isoformat()
+            },
+            "tensors": tensor_info
+        }
+        
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ PyTorch 模型已保存:")
+        print(f"   JSON: {json_path}")
+        print(f"   NPZ:  {npz_path}")
+        print(f"   Tensors: {len(numpy_state)}")
+        
+    except Exception as e:
+        print(f"⚠️ PyTorch 模型保存 (JSON+NPZ) 失败: {e}")
+        print("   继续使用标准 .pt 格式保存...")
+
+    # 原有的 PyTorch 保存（保留兼容）
     torch.save(
         {
             "model_state_dict": model.state_dict(),
@@ -1671,15 +1844,94 @@ def main():
     print("FLOPs estimate per sample:", json.dumps(flops, indent=2))
 
     results: Dict[str, Dict[str, Any]] = {}
+    
+    # 用于存储每个backend训练后的模型实例（用于保存模型）
+    trained_models: Dict[str, Any] = {}
+    
     for backend in order:
         print("\n" + "=" * 88)
         print(f"Running backend: {backend}")
         print("=" * 88)
+        
         if backend == "mytorch_jit":
-            results[backend] = run_mytorch_jit(config, output_dir, flops)
+            result, model = run_mytorch_jit_with_model(config, output_dir, flops)
+            results[backend] = result
+            trained_models[backend] = model
         elif backend == "pytorch":
-            results[backend] = run_pytorch(config, output_dir, flops)
+            result, model = run_pytorch_with_model(config, output_dir, flops)
+            results[backend] = result
+            trained_models[backend] = model
+        elif backend == "tensorflow":
+            # 如果支持TensorFlow，同样返回模型
+            result, model = run_tensorflow_with_model(config, output_dir, flops)
+            results[backend] = result
+            trained_models[backend] = model
+        elif backend == "paddlepaddle":
+            # 如果支持PaddlePaddle，同样返回模型
+            result, model = run_paddlepaddle_with_model(config, output_dir, flops)
+            results[backend] = result
+            trained_models[backend] = model
+        else:
+            # 不支持保存模型的backend，保持原样
+            results[backend] = run_generic_backend(config, output_dir, flops, backend)
+        
         write_json(os.path.join(output_dir, f"{backend}_result.json"), results[backend])
+    
+    # ==========================================================
+    # 新增：保存所有训练好的模型（JSON+NPZ格式）
+    # ==========================================================
+    print("\n" + "=" * 88)
+    print("保存训练好的模型 (JSON+NPZ格式)")
+    print("=" * 88)
+    
+    for backend, model in trained_models.items():
+        if model is not None:
+            try:
+                # 构建模型保存路径
+                model_prefix = os.path.join(output_dir, f"{backend}_model_final")
+                model_metadata = {
+                    "backend": backend,
+                    "epochs": config.epochs,
+                    "batch_size": config.batch_size,
+                    "learning_rate": config.lr,
+                    "weight_decay": config.weight_decay,
+                    "output_dim": config.output_dim,
+                    "image_height": config.image_height,
+                    "image_width": config.image_width,
+                    "device": config.device,
+                    "timestamp": timestamp,
+                    "final_train_loss": results[backend].get("final_train_loss"),
+                    "final_val_loss": results[backend].get("final_val_loss"),
+                    "final_val_mse": results[backend].get("final_val_mse"),
+                    "training_time_seconds": results[backend].get("total_time_seconds"),
+                }
+                
+                # 使用新格式保存模型
+                if hasattr(model, 'save_state'):
+                    model.save_state(model_prefix, metadata=model_metadata)
+                    print(f"✅ {backend} 模型已保存: {model_prefix}.json + {model_prefix}.npz")
+                else:
+                    # 回退到旧格式
+                    model.save_weights(f"{model_prefix}.pkl")
+                    print(f"⚠️ {backend} 使用pickle格式保存: {model_prefix}.pkl")
+                    
+            except Exception as e:
+                print(f"❌ 保存 {backend} 模型时出错: {e}")
+    
+    # 保存模型信息的JSON摘要
+    model_summary = {
+        "saved_models": list(trained_models.keys()),
+        "model_files": []
+    }
+    for backend in trained_models.keys():
+        model_prefix = os.path.join(output_dir, f"{backend}_model_final")
+        model_summary["model_files"].append({
+            "backend": backend,
+            "json": f"{model_prefix}.json",
+            "npz": f"{model_prefix}.npz"
+        })
+    write_json(os.path.join(output_dir, "model_summary.json"), model_summary)
+    print(f"✅ 模型摘要已保存: {os.path.join(output_dir, 'model_summary.json')}")
 
     comparison = make_comparison(results)
     summary = {
@@ -1688,17 +1940,27 @@ def main():
         "flops_estimate": flops,
         "results": results,
         "comparison": comparison,
+        "saved_models": list(trained_models.keys()),
     }
     write_json(os.path.join(output_dir, "summary.json"), summary)
     write_batch_csv(os.path.join(output_dir, "batch_records.csv"), results)
     write_epoch_csv(os.path.join(output_dir, "epoch_history.csv"), results)
     write_comparison_md(os.path.join(output_dir, "comparison.md"), comparison, results)
 
-    print("\nSaved results:")
+    print("\n" + "=" * 88)
+    print("训练完成！保存的文件:")
+    print("=" * 88)
     print(f"  {os.path.join(output_dir, 'summary.json')}")
     print(f"  {os.path.join(output_dir, 'epoch_history.csv')}")
     print(f"  {os.path.join(output_dir, 'batch_records.csv')}")
     print(f"  {os.path.join(output_dir, 'comparison.md')}")
+    print(f"  {os.path.join(output_dir, 'model_summary.json')}")
+    
+    # 列出所有模型文件
+    for backend in trained_models.keys():
+        print(f"  {os.path.join(output_dir, f'{backend}_model_final.json')}")
+        print(f"  {os.path.join(output_dir, f'{backend}_model_final.npz')}")
+    
     if comparison:
         print("\nComparison:")
         print(json.dumps(comparison, indent=2, ensure_ascii=False, default=json_default))
