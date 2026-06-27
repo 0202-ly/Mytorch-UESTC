@@ -1,5 +1,8 @@
 import numpy as np
 import pickle
+import json
+import os
+from datetime import datetime
 from .tensor import Tensor
 # 引用我们在 function.py 里定义的算子 (确保你的 function.py 中有这些算子)
 from .function import (
@@ -17,12 +20,13 @@ def _to_2tuple(value):
     return value, value
 
 # ==========================================================
-# 核心基类 (终极升级版)
+# 核心基类 (终极升级版) - 添加 JSON+NPZ 保存功能
 # ==========================================================
 
 class Module:
     def __init__(self):
         self.training = True
+        
     def _apply(self, fn):
         """
         内部辅助函数：递归地对所有子模块和张量应用某个函数 (如 .cuda())
@@ -46,6 +50,7 @@ class Module:
                     elif isinstance(item, Tensor):
                         fn(item)
         return self
+    
     def cuda(self):
         """将模型所有参数转移到 GPU"""
         return self._apply(lambda t: t.cuda())
@@ -78,13 +83,13 @@ class Module:
                 for item in attr:
                     if isinstance(item, Module):
                         item.training = training
-                        item._apply_mode(training)
+                        item._apply_mode(item, training)
 
             elif isinstance(attr, dict):
                 for item in attr.values():
                     if isinstance(item, Module):
                         item.training = training
-                        item._apply_mode(training)
+                        item._apply_mode(item, training)
 
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
@@ -128,27 +133,375 @@ class Module:
         collect(self)
         return params
 
+    # ==========================================================
+    # 新增：named_tensors - 递归遍历所有 Tensor（包括参数和buffer）
+    # ==========================================================
+    
+    def named_tensors(self, include_buffers=True, prefix=''):
+        """
+        递归遍历模块中的所有 Tensor（参数和buffer）
+        
+        Args:
+            include_buffers: 是否包含非训练参数（如 running_mean/running_var）
+            prefix: 名称前缀，用于递归拼接
+        
+        Returns:
+            List of (name, tensor) 元组
+        """
+        tensors = []
+        seen = set()  # 防止同一个Tensor被重复收集（如融合模块中复用的情况）
+        
+        def collect(obj, name_prefix):
+            if isinstance(obj, Module):
+                # 遍历模块的所有属性
+                for attr_name, attr_value in obj.__dict__.items():
+                    # 跳过私有属性
+                    if attr_name.startswith('_'):
+                        continue
+                    collect(attr_value, f"{name_prefix}.{attr_name}" if name_prefix else attr_name)
+                    
+            elif isinstance(obj, Tensor):
+                # 检查是否需要包含
+                if obj.requires_grad or include_buffers:
+                    obj_id = id(obj)
+                    if obj_id not in seen:
+                        seen.add(obj_id)
+                        tensors.append((name_prefix, obj))
+                        
+            elif isinstance(obj, (list, tuple)):
+                for idx, item in enumerate(obj):
+                    collect(item, f"{name_prefix}[{idx}]")
+                    
+            elif isinstance(obj, dict):
+                for key, item in obj.items():
+                    collect(item, f"{name_prefix}.{key}")
+        
+        collect(self, prefix)
+        return tensors
+
+    # ==========================================================
+    # 新增：state_dict - 返回 {name: numpy_array} 字典
+    # ==========================================================
+    
+    def state_dict(self, include_buffers=True):
+        """
+        返回模型的完整状态字典
+        
+        Args:
+            include_buffers: 是否包含 buffer（如 BN 的 running_mean/running_var）
+        
+        Returns:
+            dict: {参数名: numpy数组}
+        """
+        state = {}
+        
+        for name, tensor in self.named_tensors(include_buffers=include_buffers):
+            # 确保数据在CPU上
+            if hasattr(tensor.data, 'get'):
+                # CuPy 数组
+                state[name] = tensor.data.get()
+            elif hasattr(tensor.data, 'cpu'):
+                # PyTorch 张量
+                state[name] = tensor.data.cpu().numpy()
+            else:
+                # NumPy 数组
+                state[name] = tensor.data.copy()
+        
+        return state
+
+    # ==========================================================
+    # 新增：load_state_dict - 从状态字典加载参数
+    # ==========================================================
+    
+    def load_state_dict(self, state, strict=True):
+        """
+        从状态字典加载参数
+        
+        Args:
+            state: 从 state_dict() 返回的字典
+            strict: 是否严格模式（检查缺失和多余的键）
+        
+        Raises:
+            RuntimeError: 当 strict=True 且存在缺失或多余参数时
+        """
+        # 获取当前模型的所有 Tensor 名称
+        current_tensors = {name: tensor for name, tensor in self.named_tensors(include_buffers=True)}
+        
+        # 检查缺失和多余的键
+        missing_keys = set(current_tensors.keys()) - set(state.keys())
+        extra_keys = set(state.keys()) - set(current_tensors.keys())
+        
+        if strict:
+            error_messages = []
+            if missing_keys:
+                error_messages.append(f"Missing keys: {sorted(missing_keys)}")
+            if extra_keys:
+                error_messages.append(f"Unexpected keys: {sorted(extra_keys)}")
+            if error_messages:
+                raise RuntimeError("Error(s) in loading state_dict:\n\t" + "\n\t".join(error_messages))
+        
+        # 加载参数
+        loaded_count = 0
+        for name, tensor in current_tensors.items():
+            if name in state:
+                arr = state[name]
+                # 检查形状是否匹配
+                if arr.shape != tensor.data.shape:
+                    if strict:
+                        raise RuntimeError(
+                            f"Shape mismatch for {name}: expected {tensor.data.shape}, got {arr.shape}"
+                        )
+                    else:
+                        print(f"Warning: Shape mismatch for {name}, skipping...")
+                        continue
+                
+                # 加载数据
+                if hasattr(tensor.data, 'get'):
+                    # CuPy
+                    tensor.data = tensor.xp.array(arr)
+                else:
+                    # NumPy
+                    tensor.data = np.array(arr)
+                loaded_count += 1
+        
+        # 非严格模式时，打印警告信息
+        if not strict:
+            if missing_keys:
+                print(f"Warning: Missing keys: {sorted(missing_keys)}")
+            if extra_keys:
+                print(f"Warning: Unexpected keys: {sorted(extra_keys)}")
+        
+        return loaded_count
+
+    # ==========================================================
+    # 新增：save_state - JSON + NPZ 格式保存
+    # ==========================================================
+    
+    def save_state(self, prefix, metadata=None, compressed=True):
+        """
+        以 JSON + NPZ 格式保存模型状态
+        
+        Args:
+            prefix: 文件前缀，将生成 <prefix>.json 和 <prefix>.npz
+            metadata: 额外元数据（如训练信息、配置等）
+            compressed: 是否使用压缩 NPZ
+        
+        Returns:
+            tuple: (json_path, npz_path)
+        """
+        json_path = f"{prefix}.json"
+        npz_path = f"{prefix}.npz"
+        
+        # 获取状态字典
+        state = self.state_dict(include_buffers=True)
+        
+        # 准备 JSON 元数据
+        tensor_info = []
+        arr_keys = []
+        
+        for idx, (name, arr) in enumerate(state.items()):
+            key = f"arr_{idx:06d}"  # arr_000000, arr_000001, ...
+            arr_keys.append(key)
+            
+            tensor_info.append({
+                "name": name,
+                "key": key,
+                "shape": list(arr.shape),
+                "dtype": str(arr.dtype),
+                "requires_grad": self._get_tensor_requires_grad(name),
+                "device": "cpu"  # state_dict 总是 CPU
+            })
+        
+        # 保存 NPZ
+        npz_data = {}
+        for (name, arr), key in zip(state.items(), arr_keys):
+            npz_data[key] = arr
+        
+        if compressed:
+            np.savez_compressed(npz_path, **npz_data)
+        else:
+            np.savez(npz_path, **npz_data)
+        
+        # 构建 JSON
+        json_data = {
+            "format": "mytorch_json_npz_state",
+            "version": 1,
+            "npz_file": os.path.basename(npz_path),
+            "model_class": self.__class__.__name__,
+            "created_at": datetime.now().isoformat(),
+            "metadata": metadata or {},
+            "tensors": tensor_info
+        }
+        
+        # 保存 JSON
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ 模型状态已保存:")
+        print(f"   JSON: {json_path}")
+        print(f"   NPZ:  {npz_path}")
+        print(f"   Tensors: {len(state)}")
+        
+        return json_path, npz_path
+
+    def _get_tensor_requires_grad(self, name):
+        """获取指定 Tensor 的 requires_grad 状态"""
+        for n, tensor in self.named_tensors(include_buffers=True):
+            if n == name:
+                return tensor.requires_grad
+        return False
+
+    # ==========================================================
+    # 新增：load_state - 从 JSON + NPZ 加载模型状态
+    # ==========================================================
+    
+    def load_state(self, prefix, strict=True):
+        """
+        从 JSON + NPZ 文件加载模型状态
+        
+        Args:
+            prefix: 文件前缀（不含扩展名）
+            strict: 是否严格模式
+        
+        Returns:
+            dict: 加载统计信息
+        """
+        json_path = f"{prefix}.json"
+        npz_path = f"{prefix}.npz"
+        
+        # 检查文件是否存在
+        if not os.path.exists(json_path):
+            raise FileNotFoundError(f"JSON file not found: {json_path}")
+        if not os.path.exists(npz_path):
+            raise FileNotFoundError(f"NPZ file not found: {npz_path}")
+        
+        # 加载 JSON 元数据
+        with open(json_path, 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+        
+        # 验证格式
+        if json_data.get("format") != "mytorch_json_npz_state":
+            raise ValueError(f"Unknown format: {json_data.get('format')}")
+        
+        # 加载 NPZ 数据
+        npz_data = np.load(npz_path, allow_pickle=True)
+        
+        # 构建状态字典
+        state = {}
+        for tensor_info in json_data["tensors"]:
+            name = tensor_info["name"]
+            key = tensor_info["key"]
+            if key in npz_data:
+                arr = npz_data[key]
+                state[name] = arr
+        
+        # 加载到模型
+        loaded_count = self.load_state_dict(state, strict=strict)
+        
+        print(f"✅ 模型状态已加载:")
+        print(f"   JSON: {json_path}")
+        print(f"   NPZ:  {npz_path}")
+        print(f"   Loaded tensors: {loaded_count}")
+        
+        return {
+            "loaded_count": loaded_count,
+            "total_tensors": len(state),
+            "model_class": json_data.get("model_class"),
+            "created_at": json_data.get("created_at")
+        }
+
+    # ==========================================================
+    # 兼容旧接口：save_weights / load_weights (pickle 格式)
+    # ==========================================================
+    
     def save_weights(self, path):
-        """保存模型权重到文件"""
-        params = self.parameters()
-        # 提取 Tensor 中的 numpy/cupy 数据并转回 CPU
-        weights_data = [p.data.get() if hasattr(p.data, 'get') else p.data for p in params]
-        with open(path, 'wb') as f:
-            pickle.dump(weights_data, f)
-        print(f"模型权重已保存至: {path}")
+        """保存模型权重到文件 (pickle 格式，保留兼容)"""
+        # 如果路径是 .pkl/.pickle，使用旧 pickle 格式
+        if path.endswith(('.pkl', '.pickle')):
+            params = self.parameters()
+            weights_data = [p.data.get() if hasattr(p.data, 'get') else p.data for p in params]
+            with open(path, 'wb') as f:
+                pickle.dump(weights_data, f)
+            print(f"模型权重已保存至: {path} (pickle格式)")
+        else:
+            # 否则尝试用新格式
+            self.save_state(path)
 
     def load_weights(self, path):
-        """从文件加载模型权重"""
-        with open(path, 'rb') as f:
-            weights_data = pickle.load(f)
+        """从文件加载模型权重 (pickle 格式，保留兼容)"""
+        # 如果路径是 .pkl/.pickle，使用旧 pickle 格式
+        if path.endswith(('.pkl', '.pickle')):
+            with open(path, 'rb') as f:
+                weights_data = pickle.load(f)
 
-        params = self.parameters()
-        if len(weights_data) != len(params):
-            raise ValueError("权重文件与模型结构不匹配！")
+            params = self.parameters()
+            if len(weights_data) != len(params):
+                raise ValueError("权重文件与模型结构不匹配！")
 
-        for p, d in zip(params, weights_data):
-            p.data = p.xp.array(d) if hasattr(p, 'xp') else np.array(d)
-        print(f"模型权重已成功从 {path} 加载。")
+            for p, d in zip(params, weights_data):
+                p.data = p.xp.array(d) if hasattr(p, 'xp') else np.array(d)
+            print(f"模型权重已成功从 {path} 加载 (pickle格式)")
+        else:
+            # 否则尝试用新格式
+            self.load_state(path)
+
+
+# ==========================================================
+# 辅助函数：便捷的模型保存/加载工具
+# ==========================================================
+
+def save_model_state(model, prefix, metadata=None, compressed=True):
+    """
+    便捷函数：保存模型状态
+    
+    Args:
+        model: Module 实例
+        prefix: 文件前缀
+        metadata: 额外元数据
+        compressed: 是否压缩
+    """
+    return model.save_state(prefix, metadata, compressed)
+
+def load_model_state(model, prefix, strict=True):
+    """
+    便捷函数：加载模型状态
+    
+    Args:
+        model: Module 实例
+        prefix: 文件前缀
+        strict: 是否严格模式
+    """
+    return model.load_state(prefix, strict)
+
+def load_model_state_to_any(model_class, prefix, strict=True, **kwargs):
+    """
+    创建模型实例并加载状态
+    
+    Args:
+        model_class: 模型类
+        prefix: 文件前缀
+        strict: 是否严格模式
+        **kwargs: 传递给模型构造函数的参数
+    
+    Returns:
+        Module: 加载了状态的模型实例
+    """
+    model = model_class(**kwargs)
+    model.load_state(prefix, strict)
+    return model
+
+
+# ==========================================================
+# 原有代码保持不变...
+# ==========================================================
+
+# 以下是你原有的所有层定义 (Linear, Conv2d, ...)
+# 我为了节省空间在这里省略了，但实际使用时要把它们完整保留
+# ... (所有原有的层类保持不变) ...
+
+# 注意：上面的 Module 类已经被替换为增强版，
+# 其他层类 (Linear, Conv2d, BatchNorm2d 等) 继承自 Module，
+# 因此会自动获得 save_state / load_state 方法。
 
 
 # ==========================================================
