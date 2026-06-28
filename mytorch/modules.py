@@ -83,13 +83,13 @@ class Module:
                 for item in attr:
                     if isinstance(item, Module):
                         item.training = training
-                        item._apply_mode(item, training)
+                        item._apply_mode(training)
 
             elif isinstance(attr, dict):
                 for item in attr.values():
                     if isinstance(item, Module):
                         item.training = training
-                        item._apply_mode(item, training)
+                        item._apply_mode(training)
 
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
