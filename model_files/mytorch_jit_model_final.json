@@ -1,0 +1,1567 @@
+{
+  "format": "mytorch_json_npz_state",
+  "version": 1,
+  "npz_file": "mytorch_jit_model_final.npz",
+  "model_class": "ResNet",
+  "created_at": "2026-06-28T15:43:28.251454",
+  "metadata": {
+    "backend": "mytorch_jit",
+    "epochs": 10,
+    "batch_size": 32,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "output_dim": 1,
+    "image_height": 120,
+    "image_width": 160,
+    "device": "cuda",
+    "jit_cache_size": 2,
+    "jit_experimental_conv_bn_fusion": false,
+    "final_val_loss": 0.28256980574131013,
+    "wall_time_seconds": 929.3659978619544,
+    "timestamp": "2026-06-28T15:43:25.899506"
+  },
+  "tensors": [
+    {
+      "name": "conv1.weight",
+      "key": "arr_000000",
+      "shape": [
+        64,
+        3,
+        7,
+        7
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "conv1.bias",
+      "key": "arr_000001",
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "bn1.weight",
+      "key": "arr_000002",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "bn1.bias",
+      "key": "arr_000003",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "bn1.running_mean",
+      "key": "arr_000004",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "bn1.running_var",
+      "key": "arr_000005",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].conv1.weight",
+      "key": "arr_000006",
+      "shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].conv1.bias",
+      "key": "arr_000007",
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn1.weight",
+      "key": "arr_000008",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn1.bias",
+      "key": "arr_000009",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn1.running_mean",
+      "key": "arr_000010",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn1.running_var",
+      "key": "arr_000011",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].conv2.weight",
+      "key": "arr_000012",
+      "shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].conv2.bias",
+      "key": "arr_000013",
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn2.weight",
+      "key": "arr_000014",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn2.bias",
+      "key": "arr_000015",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn2.running_mean",
+      "key": "arr_000016",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[0].bn2.running_var",
+      "key": "arr_000017",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].conv1.weight",
+      "key": "arr_000018",
+      "shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].conv1.bias",
+      "key": "arr_000019",
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn1.weight",
+      "key": "arr_000020",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn1.bias",
+      "key": "arr_000021",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn1.running_mean",
+      "key": "arr_000022",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn1.running_var",
+      "key": "arr_000023",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].conv2.weight",
+      "key": "arr_000024",
+      "shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].conv2.bias",
+      "key": "arr_000025",
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn2.weight",
+      "key": "arr_000026",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn2.bias",
+      "key": "arr_000027",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn2.running_mean",
+      "key": "arr_000028",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer1[1].bn2.running_var",
+      "key": "arr_000029",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].conv1.weight",
+      "key": "arr_000030",
+      "shape": [
+        128,
+        64,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].conv1.bias",
+      "key": "arr_000031",
+      "shape": [
+        1,
+        128
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn1.weight",
+      "key": "arr_000032",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn1.bias",
+      "key": "arr_000033",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn1.running_mean",
+      "key": "arr_000034",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn1.running_var",
+      "key": "arr_000035",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].conv2.weight",
+      "key": "arr_000036",
+      "shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].conv2.bias",
+      "key": "arr_000037",
+      "shape": [
+        1,
+        128
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn2.weight",
+      "key": "arr_000038",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn2.bias",
+      "key": "arr_000039",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn2.running_mean",
+      "key": "arr_000040",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].bn2.running_var",
+      "key": "arr_000041",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.conv.weight",
+      "key": "arr_000042",
+      "shape": [
+        128,
+        64,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.conv.bias",
+      "key": "arr_000043",
+      "shape": [
+        1,
+        128
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.bn.weight",
+      "key": "arr_000044",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.bn.bias",
+      "key": "arr_000045",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.bn.running_mean",
+      "key": "arr_000046",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[0].downsample.bn.running_var",
+      "key": "arr_000047",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].conv1.weight",
+      "key": "arr_000048",
+      "shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].conv1.bias",
+      "key": "arr_000049",
+      "shape": [
+        1,
+        128
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn1.weight",
+      "key": "arr_000050",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn1.bias",
+      "key": "arr_000051",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn1.running_mean",
+      "key": "arr_000052",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn1.running_var",
+      "key": "arr_000053",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].conv2.weight",
+      "key": "arr_000054",
+      "shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].conv2.bias",
+      "key": "arr_000055",
+      "shape": [
+        1,
+        128
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn2.weight",
+      "key": "arr_000056",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn2.bias",
+      "key": "arr_000057",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn2.running_mean",
+      "key": "arr_000058",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer2[1].bn2.running_var",
+      "key": "arr_000059",
+      "shape": [
+        1,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].conv1.weight",
+      "key": "arr_000060",
+      "shape": [
+        256,
+        128,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].conv1.bias",
+      "key": "arr_000061",
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn1.weight",
+      "key": "arr_000062",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn1.bias",
+      "key": "arr_000063",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn1.running_mean",
+      "key": "arr_000064",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn1.running_var",
+      "key": "arr_000065",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].conv2.weight",
+      "key": "arr_000066",
+      "shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].conv2.bias",
+      "key": "arr_000067",
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn2.weight",
+      "key": "arr_000068",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn2.bias",
+      "key": "arr_000069",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn2.running_mean",
+      "key": "arr_000070",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].bn2.running_var",
+      "key": "arr_000071",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.conv.weight",
+      "key": "arr_000072",
+      "shape": [
+        256,
+        128,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.conv.bias",
+      "key": "arr_000073",
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.bn.weight",
+      "key": "arr_000074",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.bn.bias",
+      "key": "arr_000075",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.bn.running_mean",
+      "key": "arr_000076",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[0].downsample.bn.running_var",
+      "key": "arr_000077",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].conv1.weight",
+      "key": "arr_000078",
+      "shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].conv1.bias",
+      "key": "arr_000079",
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn1.weight",
+      "key": "arr_000080",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn1.bias",
+      "key": "arr_000081",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn1.running_mean",
+      "key": "arr_000082",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn1.running_var",
+      "key": "arr_000083",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].conv2.weight",
+      "key": "arr_000084",
+      "shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].conv2.bias",
+      "key": "arr_000085",
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn2.weight",
+      "key": "arr_000086",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn2.bias",
+      "key": "arr_000087",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn2.running_mean",
+      "key": "arr_000088",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer3[1].bn2.running_var",
+      "key": "arr_000089",
+      "shape": [
+        1,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].conv1.weight",
+      "key": "arr_000090",
+      "shape": [
+        512,
+        256,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].conv1.bias",
+      "key": "arr_000091",
+      "shape": [
+        1,
+        512
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn1.weight",
+      "key": "arr_000092",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn1.bias",
+      "key": "arr_000093",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn1.running_mean",
+      "key": "arr_000094",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn1.running_var",
+      "key": "arr_000095",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].conv2.weight",
+      "key": "arr_000096",
+      "shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].conv2.bias",
+      "key": "arr_000097",
+      "shape": [
+        1,
+        512
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn2.weight",
+      "key": "arr_000098",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn2.bias",
+      "key": "arr_000099",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn2.running_mean",
+      "key": "arr_000100",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].bn2.running_var",
+      "key": "arr_000101",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.conv.weight",
+      "key": "arr_000102",
+      "shape": [
+        512,
+        256,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.conv.bias",
+      "key": "arr_000103",
+      "shape": [
+        1,
+        512
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.bn.weight",
+      "key": "arr_000104",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.bn.bias",
+      "key": "arr_000105",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.bn.running_mean",
+      "key": "arr_000106",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[0].downsample.bn.running_var",
+      "key": "arr_000107",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].conv1.weight",
+      "key": "arr_000108",
+      "shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].conv1.bias",
+      "key": "arr_000109",
+      "shape": [
+        1,
+        512
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn1.weight",
+      "key": "arr_000110",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn1.bias",
+      "key": "arr_000111",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn1.running_mean",
+      "key": "arr_000112",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn1.running_var",
+      "key": "arr_000113",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].conv2.weight",
+      "key": "arr_000114",
+      "shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].conv2.bias",
+      "key": "arr_000115",
+      "shape": [
+        1,
+        512
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn2.weight",
+      "key": "arr_000116",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn2.bias",
+      "key": "arr_000117",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn2.running_mean",
+      "key": "arr_000118",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "layer4[1].bn2.running_var",
+      "key": "arr_000119",
+      "shape": [
+        1,
+        512,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": false,
+      "device": "cpu"
+    },
+    {
+      "name": "fc.weight",
+      "key": "arr_000120",
+      "shape": [
+        512,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    },
+    {
+      "name": "fc.bias",
+      "key": "arr_000121",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "requires_grad": true,
+      "device": "cpu"
+    }
+  ]
+}
