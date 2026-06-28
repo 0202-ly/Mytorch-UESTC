@@ -1854,26 +1854,11 @@ def main():
         print("=" * 88)
         
         if backend == "mytorch_jit":
-            result, model = run_mytorch_jit_with_model(config, output_dir, flops)
+            result = run_mytorch_jit(config, output_dir, flops)
             results[backend] = result
-            trained_models[backend] = model
         elif backend == "pytorch":
-            result, model = run_pytorch_with_model(config, output_dir, flops)
+            result = run_pytorch(config, output_dir, flops)
             results[backend] = result
-            trained_models[backend] = model
-        elif backend == "tensorflow":
-            # 如果支持TensorFlow，同样返回模型
-            result, model = run_tensorflow_with_model(config, output_dir, flops)
-            results[backend] = result
-            trained_models[backend] = model
-        elif backend == "paddlepaddle":
-            # 如果支持PaddlePaddle，同样返回模型
-            result, model = run_paddlepaddle_with_model(config, output_dir, flops)
-            results[backend] = result
-            trained_models[backend] = model
-        else:
-            # 不支持保存模型的backend，保持原样
-            results[backend] = run_generic_backend(config, output_dir, flops, backend)
         
         write_json(os.path.join(output_dir, f"{backend}_result.json"), results[backend])
     
