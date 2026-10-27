@@ -1,0 +1,18 @@
+{
+  "steps": 20,
+  "samples": 320,
+  "avg_step_ms": 233.36516204290092,
+  "avg_data_load_ms": 6.165019725449383,
+  "avg_data_transfer_ms": 0.9672011714428663,
+  "avg_forward_ms": 26.032777805812657,
+  "avg_backward_ms": 70.1881700893864,
+  "avg_optimizer_update_ms": 130.0119932508096,
+  "avg_samples_per_sec": 71.33600493309393,
+  "gpu_util_avg_pct": 42.714285714285715,
+  "gpu_util_max_pct": 80.0,
+  "memory_peak_mib": 4240.0,
+  "temperature_max_c": 35.0,
+  "power_max_w": 99.46,
+  "cpu_system_avg_pct": 8.65496493846562,
+  "cpu_process_avg_pct_one_core": 100.30258187897005
+}

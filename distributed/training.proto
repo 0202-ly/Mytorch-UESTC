@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package mytorch.distributed;
+
+message PullRequest {
+  string worker_id = 1;
+  int64 known_version = 2;
+}
+
+message PullReply {
+  bytes parameters = 1;
+  int64 version = 2;
+}
+
+message PushRequest {
+  string worker_id = 1;
+  int64 base_version = 2;
+  bytes gradient = 3;
+  int64 sample_count = 4;
+  double compute_ms = 5;
+  double accuracy = 6;
+  string gradient_dtype = 7;
+}
+
+message PushReply {
+  bytes parameters = 1;
+  int64 version = 2;
+  int64 message_bytes = 3;
+}
+
+message FinishRequest { string worker_id = 1; }
+message FinishReply { bool ok = 1; }
+
+service ParameterServer {
+  rpc Pull(PullRequest) returns (PullReply);
+  rpc Push(PushRequest) returns (PushReply);
+  rpc Finish(FinishRequest) returns (FinishReply);
+}

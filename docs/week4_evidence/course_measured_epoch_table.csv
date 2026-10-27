@@ -1,0 +1,12 @@
+﻿configuration,mean_epoch_total_seconds,mean_epoch_compute_seconds,mean_epoch_communication_seconds,speedup_vs_single,last_epoch_threshold_accuracy
+单机（基线）,98.885,96.357,0.0,1.0,0.508
+Socket+JSON PS，2 Worker / 2 GPU,226.163,33.857,147.739,0.437,0.3496
+gRPC+Protobuf PS，2 Worker / 2 GPU,120.275,33.961,57.373,0.822,0.3511
+Socket+JSON PS，4 Worker / 4 GPU,179.258,17.39,118.992,0.552,0.694
+gRPC+Protobuf PS，4 Worker / 4 GPU,86.866,17.062,36.242,1.138,0.5053
+二进制 TCP Ring AllReduce，2 Worker / 2 GPU,87.52,33.61,43.521,1.13,0.3003
+二进制 TCP Ring AllReduce，4 Worker / 4 GPU,46.53,17.146,24.079,2.125,0.2546
+Socket+JSON Ring，2 Worker / 2 GPU,100.175,30.347,61.317,0.987,0.2945
+Socket+JSON Ring，4 Worker / 4 GPU,68.064,17.222,45.472,1.453,0.2618
+gRPC+Protobuf Ring，2 Worker / 2 GPU,77.021,29.782,38.884,1.284,0.295
+gRPC+Protobuf Ring，4 Worker / 4 GPU,47.636,16.926,25.536,2.076,0.266

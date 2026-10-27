@@ -4,6 +4,8 @@
 
 当前自动驾驶任务主要预测 **steering angle 转向角**，暂不控制速度。
 
+分布式训练（单机、Socket+JSON / gRPC+Protobuf PS、Ring AllReduce）、GPU 卷积对照、GPU 监控和 Nsight Systems 的代码及成功实验摘要见 [分布式与 GPU 课程实验索引](docs/distributed_gpu_coursework.md)。原有框架、数据集和训练流程保留不变。
+
 ## 项目结构
 
 ```text
